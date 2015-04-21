@@ -1,16 +1,16 @@
 Flock flock;
 Camera cam;
 float cageSize = 1000;
-
+float sphereOfInfluence = 150;
 PGraphics buffer;
 void setup() {
-  size(1280, 720, P3D);
+  size(800, 480, P3D);
   cam = new Camera();
   buffer = createGraphics(width, height);
   flock = new Flock();
 
   for (int i = 0; i < 500; i++) {
-    flock.addBoid(new Boid(new PVector(i* random(-1,2), i* random(-1,2), i* random(-1,2))));
+    flock.addBoid(new Boid(new PVector(random(-cageSize/2,cageSize/2), random(-cageSize/2,cageSize/2), random(-cageSize/2,cageSize/2))));
   }
   
 }

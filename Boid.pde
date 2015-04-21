@@ -13,14 +13,14 @@ class Boid {
 
     Boid(PVector pos) {
     force = new PVector();
-    mass = random(5,20);
+    mass = 20;
     acceleration = new PVector();
     velocity = PVector.random3D();
     position = pos;
     colorMode(HSB);
     tint = color(random(100,151),255,255);
     colorMode(RGB);
-    radius = 200.0;
+    radius = 50.0;
     maxSpeed = 2.0;
     maxForce = 0.03;
     
@@ -158,7 +158,7 @@ class Boid {
   //cohesion method
   //for the average location of all nearby boids, calculate steering vector towards that location
   PVector cohesion(ArrayList<Boid> boids) {
-    float neighborDist = 50; //range for neighbor inclusion
+    float neighborDist = radius; //range for neighbor inclusion
     PVector sum = new PVector();
 
     int i = 0;
@@ -204,7 +204,12 @@ class Boid {
     noStroke();
     box(10);
     popMatrix();
-  
+    radius = sphereOfInfluence;
+    println(radius);
   }
+  
+ 
 }
-
+ void mouseWheel(MouseEvent e){
+   sphereOfInfluence += e.getCount()/5.0;
+  } 
