@@ -18,7 +18,7 @@ class Boid {
   float lifeExpectancy;
   boolean dying = false;
   ArrayList<PVector> trail = new ArrayList<PVector>();
-  int trailLimit = 100;
+  int trailLimit = 200;
 
   Boid(PVector pos) {
     gender = random(100);
