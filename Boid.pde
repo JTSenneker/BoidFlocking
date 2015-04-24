@@ -5,6 +5,7 @@ class Boid {
   PVector force;
   PVector acceleration;
 
+  float sexDrive;
   float mass;
   float radius;
   float maxForce; //max steering force
