@@ -5,9 +5,10 @@ class Flock{
   }
   
   void update(){
-   for (Boid b : boids){
+   for (int i = boids.size() - 1; i >= 0; i--){
      //updates boids in the array
-    b.update(boids);
+    boids.get(i).update(boids);
+    if (boids.get(i).dead) boids.remove(i);
    } 
   }
   

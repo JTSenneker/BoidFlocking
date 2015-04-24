@@ -10,8 +10,13 @@ class Boid {
   float maxForce; //max steering force
   float maxSpeed; //max steering speed
   color tint;
+  
+  boolean dead = false;
+  float age = 1;
+  float lifeExpectancy;
 
     Boid(PVector pos) {
+    lifeExpectancy = random(60,120);
     force = new PVector();
     mass = 20;
     acceleration = new PVector();
@@ -28,6 +33,13 @@ class Boid {
   }
 
   void update(ArrayList<Boid> boids) {
+     radius = sphereOfInfluence;
+    float deltaTime = 0;
+    float time += millis()/1000.0;
+    age = time;
+    println(age);
+    if (age > lifeExpectancy) dead = true;
+    deltaTime *= 0;
     flock(boids);
     updateLocation();
     borders();
@@ -204,12 +216,11 @@ class Boid {
     noStroke();
     box(10);
     popMatrix();
-    radius = sphereOfInfluence;
-    println(radius);
+   
   }
   
  
 }
  void mouseWheel(MouseEvent e){
-   sphereOfInfluence += e.getCount()/5.0;
+   sphereOfInfluence += e.getCount();
   } 
