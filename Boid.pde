@@ -4,45 +4,63 @@ class Boid {
   PVector velocity;
   PVector force;
   PVector acceleration;
-  
+
   float mass;
   float radius;
   float maxForce; //max steering force
   float maxSpeed; //max steering speed
   color tint;
   
+  float gender;
+
   boolean dead = false;
   float age = 1;
   float lifeExpectancy;
+  boolean dying = false;
+  ArrayList<PVector> trail = new ArrayList<PVector>();
+  int trailLimit = 100;
 
-    Boid(PVector pos) {
-    lifeExpectancy = random(60,120);
+  Boid(PVector pos) {
+    gender = random(100);
+    if (gender > 50){
+     //the boid is female
+     //and will be represented a green node
+     colorMode(HSB);
+     tint = color(random(100, 110), 255, 255);  
+    }
+    else {
+       //the boid is male
+     //and will be represented a blue node
+      colorMode(HSB);
+      tint = color(random(140, 150), 255, 255);
+    }
+    lifeExpectancy = random(60, 120);
     force = new PVector();
-    mass = 20;
+    mass = random(15, 20);
     acceleration = new PVector();
     velocity = PVector.random3D();
     position = pos;
-    colorMode(HSB);
-    tint = color(random(100,151),255,255);
-    colorMode(RGB);
+    
     radius = 50.0;
     maxSpeed = 2.0;
     maxForce = 0.03;
-    
+
     float angle = random(TWO_PI);
   }
 
   void update(ArrayList<Boid> boids) {
-     radius = sphereOfInfluence;
+    radius = sphereOfInfluence;
     float deltaTime = 0;
-    float time += millis()/1000.0;
+    float time = millis()/1000.0;
     age = time;
     println(age);
-    if (age > lifeExpectancy) dead = true;
-    deltaTime *= 0;
-    flock(boids);
-    updateLocation();
-    borders();
+    if (age > lifeExpectancy) dying = true;
+
+    if (!dying) {
+      updateLocation();
+      flock(boids);
+      borders();
+    }
     draw();
   }
 
@@ -73,7 +91,7 @@ class Boid {
 
   //updating location
   void updateLocation() {
-    prevPosition = position.get();
+    trail.add(position.get());
     force.div(mass);
     acceleration.add(force);
     velocity.add(acceleration);
@@ -98,12 +116,12 @@ class Boid {
 
   // Wraparound
   void borders() {
-    if (position.x < -cageSize/2) addForce(new PVector(maxForce*5,0));
-    if (position.y < -cageSize/2) addForce(new PVector(0,maxForce*5));
-    if (position.x > cageSize/2) addForce(new PVector(-maxForce*5,0));
-    if (position.y > cageSize/2) addForce(new PVector(0,-maxForce*5));
-    if (position.z < -cageSize/2) addForce(new PVector(0,0,maxForce*5));
-    if (position.z > cageSize/2) addForce(new PVector(0,0,-maxForce*4));
+    if (position.x < -cageSize/2) addForce(new PVector(maxForce*5, 0));
+    if (position.y < -cageSize/2) addForce(new PVector(0, maxForce*5));
+    if (position.x > cageSize/2) addForce(new PVector(-maxForce*5, 0));
+    if (position.y > cageSize/2) addForce(new PVector(0, -maxForce*5));
+    if (position.z < -cageSize/2) addForce(new PVector(0, 0, maxForce*5));
+    if (position.z > cageSize/2) addForce(new PVector(0, 0, -maxForce*4));
   }
 
   //separation method
@@ -198,29 +216,35 @@ class Boid {
     noStroke();
 
     pushMatrix();
-    translate(position.x, position.y,position.z);
+    translate(position.x, position.y, position.z);
     rotate(angle);
-    buffer.stroke(tint);
-    //buffer.line(position.x, position.y,position.z, prevPosition.x, prevPosition.y,prevPosition.z);
-    
-    /*beginShape(TRIANGLES);
-    vertex(0, -radius*2);
-    vertex(-radius, radius*2);
-    vertex(radius, radius*2);
-    endShape();
-    */
-      stroke(tint);
-    strokeWeight(10);
-    //line(position.x, position.y,position.z, prevPosition.x, prevPosition.y,prevPosition.z);
-    
+
+    stroke(tint);
+    strokeWeight(1);
+
+
     noStroke();
     box(10);
+
     popMatrix();
-   
+    stroke(tint);
+    strokeWeight(1);
+    drawTrail();
   }
-  
- 
+
+  void drawTrail() {
+    for (int i =0; i < trail.size ()-1; i++) {
+      PVector p1 = trail.get(i);
+      if (i > 0) {
+        PVector p2 = trail.get(i - 1);
+
+        line(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+      }
+    }
+    if (trail.size() > trailLimit) trail.remove(0);
+  }
 }
- void mouseWheel(MouseEvent e){
-   sphereOfInfluence += e.getCount();
-  } 
+void mouseWheel(MouseEvent e) {
+  sphereOfInfluence += e.getCount();
+} 
+
