@@ -1,18 +1,25 @@
 class Boid {
+
+  //breeding varialbes
+  boolean foundMate;
+  float labido;
+  float sexDrive;//the point where they'll want to breed
+  float gender;
+  ////breeding variables
   PVector prevPosition;
   PVector position;
   PVector velocity;
   PVector force;
   PVector acceleration;
 
-  float sexDrive;
+
   float mass;
   float radius;
   float maxForce; //max steering force
   float maxSpeed; //max steering speed
   color tint;
-  
-  float gender;
+
+
 
   boolean dead = false;
   float age = 1;
@@ -21,17 +28,47 @@ class Boid {
   ArrayList<PVector> trail = new ArrayList<PVector>();
   int trailLimit = 200;
 
-  Boid(PVector pos) {
+  Boid(PVector pos, float mass, float lifeExpectancy, float sexDrive) {
+    position = pos;
+    this.mass = mass;
+    this.lifeExpectancy = lifeExpectancy;
+    this.sexDrive = sexDrive;
     gender = random(100);
-    if (gender > 50){
-     //the boid is female
-     //and will be represented a green node
-     colorMode(HSB);
-     tint = color(random(100, 110), 255, 255);  
+    if (gender > 50) {
+      //the boid is female
+      //and will be represented a green node
+      colorMode(HSB);
+      tint = color(random(100, 110), 255, 255);
     }
     else {
-       //the boid is male
-     //and will be represented a blue node
+      //the boid is male
+      //and will be represented a blue node
+      colorMode(HSB);
+      tint = color(random(140, 150), 255, 255);
+    }
+
+    force = new PVector();
+    acceleration = new PVector();
+    velocity = PVector.random3D();
+
+    radius = 50.0;
+    maxSpeed = 2.0;
+    maxForce = 0.03;
+
+    float angle = random(TWO_PI);
+  }
+
+  Boid(PVector pos) {
+    gender = random(100);
+    if (gender > 50) {
+      //the boid is female
+      //and will be represented a green node
+      colorMode(HSB);
+      tint = color(random(100, 110), 255, 255);
+    }
+    else {
+      //the boid is male
+      //and will be represented a blue node
       colorMode(HSB);
       tint = color(random(140, 150), 255, 255);
     }
@@ -41,7 +78,7 @@ class Boid {
     acceleration = new PVector();
     velocity = PVector.random3D();
     position = pos;
-    
+    sexDrive = random(30,50);
     radius = 50.0;
     maxSpeed = 2.0;
     maxForce = 0.03;
@@ -51,13 +88,14 @@ class Boid {
 
   void update(ArrayList<Boid> boids) {
     radius = sphereOfInfluence;
-    float deltaTime = 0;
-    float time = millis()/1000.0;
-    age = time;
-    println(age);
-    if (age > lifeExpectancy) dying = true;
 
-    if (!dying) {
+    age += deltaTime();
+    labido += deltaTime();
+    if (age > lifeExpectancy) dead = true;
+    if (labido >= sexDrive){
+     breed(boids); 
+    }
+    if (!dying || labido < sexDrive) {
       updateLocation();
       flock(boids);
       borders();
@@ -183,7 +221,8 @@ class Boid {
       PVector steer = PVector.sub(sum, velocity);
       steer.limit(maxForce);
       return steer;
-    } else return new PVector();
+    } 
+    else return new PVector();
   }
 
   //cohesion method
@@ -205,7 +244,8 @@ class Boid {
     if (i > 0) {
       sum.div((float)i);
       return steer(sum);
-    } else return new PVector();
+    } 
+    else return new PVector();
   }
 
   //draw method
@@ -230,7 +270,7 @@ class Boid {
     popMatrix();
     stroke(tint);
     strokeWeight(1);
-    drawTrail();
+    //drawTrail();
   }
 
   void drawTrail() {
@@ -244,6 +284,41 @@ class Boid {
     }
     if (trail.size() > trailLimit) trail.remove(0);
   }
+
+
+  //method for breeding
+  //finds a mate, then when they pair up, spawn a child with new stats based off eachother's parents.
+  void breed(ArrayList<Boid> boids) {
+    for (int i = boids.size()-1; i >=0; i--) {
+      Boid b = boids.get(i);
+      Boid mate = b;
+      if (b == this) continue;
+      if (!foundMate) {
+        if (gender <= 50 && b.gender > 50 || gender > 50 && b.gender < 50) {
+          if (b.labido > sexDrive) {
+            mate = b;
+            foundMate = true;
+          }
+        }
+      }
+      else {
+        addForce(steer(mate.position));
+        if (PVector.dist(position, b.position) < 10) {
+          PVector childPosition = new PVector(b.position.x, b.position.y, b.position.z-10);
+          float childMass = ((mass + b.mass)/2) + random(-5, 5);
+          float childLifeExpectancy = ((lifeExpectancy + b.lifeExpectancy)/2) + random(-5, 5);
+          float childSexDrive = ((sexDrive + b.sexDrive)/2) + random(-5, 5);
+          
+          flock.addBoid(new Boid(childPosition, childMass, childLifeExpectancy, childSexDrive));
+          b.labido = 0;
+          labido = 0;
+        }
+      }
+    }
+  }
+  //end of breed method
+  
+  
 }
 void mouseWheel(MouseEvent e) {
   sphereOfInfluence += e.getCount();
