@@ -6,6 +6,14 @@ class Boid {
   float sexDrive;//the point where they'll want to breed
   float gender;
   ////breeding variables
+
+  //hunger variables
+  boolean foundPrey;
+  float appetite;
+  float maxAppetite;
+  float predatory;//determins where they'll eat fish or kelp
+  //hunger variables
+
   PVector prevPosition;
   PVector position;
   PVector velocity;
@@ -33,20 +41,26 @@ class Boid {
     this.mass = mass;
     this.lifeExpectancy = lifeExpectancy;
     this.sexDrive = sexDrive;
+    //gender determination
     gender = random(100);
     if (gender > 50) {
       //the boid is female
       //and will be represented a green node
       colorMode(HSB);
       tint = color(random(100, 110), 255, 255);
-    }
-    else {
+    } else {
       //the boid is male
       //and will be represented a blue node
       colorMode(HSB);
       tint = color(random(140, 150), 255, 255);
     }
+    //gender determination
 
+    //hunger stats
+    predatory = random(100);
+    appetite = 0;
+    maxAppetite = random(60, 120);
+    //hunger stats
     force = new PVector();
     acceleration = new PVector();
     velocity = PVector.random3D();
@@ -65,8 +79,7 @@ class Boid {
       //and will be represented a green node
       colorMode(HSB);
       tint = color(random(100, 110), 255, 255);
-    }
-    else {
+    } else {
       //the boid is male
       //and will be represented a blue node
       colorMode(HSB);
@@ -74,11 +87,11 @@ class Boid {
     }
     lifeExpectancy = random(60, 120);
     force = new PVector();
-    mass = random(15, 20);
+    mass = random(15, 30);
     acceleration = new PVector();
     velocity = PVector.random3D();
     position = pos;
-    sexDrive = random(30,50);
+    sexDrive = random(30, 50);
     radius = 50.0;
     maxSpeed = 2.0;
     maxForce = 0.03;
@@ -92,8 +105,8 @@ class Boid {
     age += deltaTime();
     labido += deltaTime();
     if (age > lifeExpectancy) dead = true;
-    if (labido >= sexDrive){
-     breed(boids); 
+    if (labido >= sexDrive) {
+      breed(boids);
     }
     if (!dying || labido < sexDrive) {
       updateLocation();
@@ -221,8 +234,7 @@ class Boid {
       PVector steer = PVector.sub(sum, velocity);
       steer.limit(maxForce);
       return steer;
-    } 
-    else return new PVector();
+    } else return new PVector();
   }
 
   //cohesion method
@@ -244,8 +256,7 @@ class Boid {
     if (i > 0) {
       sum.div((float)i);
       return steer(sum);
-    } 
-    else return new PVector();
+    } else return new PVector();
   }
 
   //draw method
@@ -265,7 +276,7 @@ class Boid {
 
 
     noStroke();
-    box(10);
+    box(mass);
 
     popMatrix();
     stroke(tint);
@@ -289,7 +300,7 @@ class Boid {
   //method for breeding
   //finds a mate, then when they pair up, spawn a child with new stats based off eachother's parents.
   void breed(ArrayList<Boid> boids) {
-    for (int i = boids.size()-1; i >=0; i--) {
+    for (int i = boids.size ()-1; i >=0; i--) {
       Boid b = boids.get(i);
       Boid mate = b;
       if (b == this) continue;
@@ -300,15 +311,14 @@ class Boid {
             foundMate = true;
           }
         }
-      }
-      else {
+      } else {
         addForce(steer(mate.position));
         if (PVector.dist(position, b.position) < 10) {
           PVector childPosition = new PVector(b.position.x, b.position.y, b.position.z-10);
           float childMass = ((mass + b.mass)/2) + random(-5, 5);
           float childLifeExpectancy = ((lifeExpectancy + b.lifeExpectancy)/2) + random(-5, 5);
           float childSexDrive = ((sexDrive + b.sexDrive)/2) + random(-5, 5);
-          
+
           flock.addBoid(new Boid(childPosition, childMass, childLifeExpectancy, childSexDrive));
           b.labido = 0;
           labido = 0;
@@ -317,9 +327,29 @@ class Boid {
     }
   }
   //end of breed method
-  
-  
+
+  //hunger method
+  void eat(ArrayList<Boid> boids) {
+    Boid prey = new Boid();
+    if (predatory > 90) {
+      if (!foundPrey) {
+        for (int i = boids.size () - 1; i >= 0; i--) {
+          Boid b = boids.get(i);
+          if (b == this) continue;
+          if (b.mass < mass) {
+            prey = b;
+            foundPrey = true;
+          }
+        }
+      }
+      else{
+        addForce(steer(prey.position));
+      }
+    }
+  }
 }
+
+
 void mouseWheel(MouseEvent e) {
   sphereOfInfluence += e.getCount();
 } 
