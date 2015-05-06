@@ -20,7 +20,7 @@ void draw() {
   //lights();
   background(0);
   cam.update();
-
+  //println(cam.position);
 
 
   flock.update();

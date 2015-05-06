@@ -1,5 +1,5 @@
 class Boid {
-
+  AABB collider;
   //breeding varialbes
   boolean foundMate;
   float labido;
@@ -72,10 +72,13 @@ class Boid {
     maxForce = 0.03;
 
     float angle = random(TWO_PI);
+    collider = new AABB(mass,mass,mass);
   }
 
   Boid(PVector pos) {
+    age = random(1,10);
     gender = random(100);
+    predatory = random(100);
     if (gender > 50) {
       //the boid is female
       //and will be represented a green node
@@ -87,37 +90,42 @@ class Boid {
       colorMode(HSB);
       tint = color(random(140, 150), 255, 255);
     }
-    lifeExpectancy = random(60, 120);
+    lifeExpectancy = random(120, 300);
     force = new PVector();
-    mass = random(15, 30);
+    //mass = random(15, 30);
     acceleration = new PVector();
     velocity = PVector.random3D();
     position = pos;
-    sexDrive = random(30, 50);
+    sexDrive = random(60, 180);
     radius = 50.0;
     maxSpeed = 2.0;
     maxForce = 0.03;
-    maxAppetite = random(60, 120);
+    maxAppetite = random(120, 240);
     float angle = random(TWO_PI);
+    collider = new AABB(mass,mass,mass);
   }
 
   void update(ArrayList<Boid> boids) {
     
+    mass = age/10;
+    if (mass < 10) mass = 10;
     radius = sphereOfInfluence;
     appetite += deltaTime();
     age += deltaTime();
     labido += deltaTime();
     if (appetite >= maxAppetite) {
-      lifeExpectancy -= deltaTime()/5;
+      lifeExpectancy -= deltaTime()/3;
+      maxAppetite -= deltaTime()/3;
       eat(boids, kelp);
     }
-    //if (age > lifeExpectancy) dead = true;
-    //if (labido >= sexDrive) breed(boids);
+    if (age > lifeExpectancy) dead = true;
+    if (labido >= sexDrive) breed(boids);
     if (!dying || labido < sexDrive || appetite < maxAppetite) {
       updateLocation();
       flock(boids);
       borders();
     }
+    collider.update(mass,mass,mass,position);
     draw();
   }
 
@@ -176,7 +184,7 @@ class Boid {
     if (position.x < -cageSize/2) addForce(new PVector(maxForce*5, 0));
     if (position.y < -cageSize/2) addForce(new PVector(0, maxForce*5));
     if (position.x > cageSize/2) addForce(new PVector(-maxForce*5, 0));
-    if (position.y > cageSize/2) addForce(new PVector(0, -maxForce*5));
+    if (position.y > cageSize/2 - 20) addForce(new PVector(0, -maxForce*5));
     if (position.z < -cageSize/2) addForce(new PVector(0, 0, maxForce*5));
     if (position.z > cageSize/2) addForce(new PVector(0, 0, -maxForce*4));
   }
@@ -184,7 +192,7 @@ class Boid {
   //separation method
   //check for nearby boids and steer away
   PVector separate(ArrayList<Boid> boids) {
-    float desiredSeparation = 30.0;//how separated we want our birds
+    float desiredSeparation = 30;//how separated we want our birds
     PVector steer = new PVector();
     int i = 0;
 
@@ -318,7 +326,8 @@ class Boid {
         }
       } else {
         addForce(steer(mate.position));
-        if (PVector.dist(position, b.position) < 10) {
+        if (collider.checkCollide(mate.collider)) {
+          println("gotcha");
           PVector childPosition = new PVector(b.position.x, b.position.y, b.position.z-10);
           float childMass = ((mass + b.mass)/2) + random(-5, 5);
           float childLifeExpectancy = ((lifeExpectancy + b.lifeExpectancy)/2) + random(-5, 5);
@@ -329,6 +338,7 @@ class Boid {
           //foundMate = false;
           b.labido = 0;
           labido = 0;
+          velocity = PVector.random3D();
         }
       }
     }
@@ -338,30 +348,35 @@ class Boid {
   //hunger method
   void eat(ArrayList<Boid> boids, ArrayList<Kelp> kelp) {
     //Boid prey = /*new Boid(new PVector(0,0,0))*/ null;
-    if (predatory > 0) {
+
+    if (predatory > 90) {
       for (int i = boids.size () - 1; i >= 0; i--) {
         Boid b = boids.get(i);
-        if (b == this) continue;
+        if (b == this || b.mass > this.mass) continue;
         Boid prey = b;
-        println(PVector.dist(this.position,prey.position));
-          addForce(steer(prey.position));
-          if (PVector.dist(prey.position, position) < 100) {
+            //println(PVector.dist(this.position,prey.position));
+          
+           addForce(steer(prey.position));
+          if (collider.checkCollide(prey.collider)) {
+            println("gotcha");
             prey.dead = true;  
             appetite = 0;
             //foundPrey = false;
+            velocity = PVector.random3D();
         }
       }
     } else {
-      for (Kelp k : kelp) {
-        Kelp targetKelp = new Kelp(new PVector(0, 0, 0));
-        if (k.edible) {
-          targetKelp = k;
+      for ( int i =  kelp.size()-1;i >=0;i--) {
+        Kelp targetKelp = kelp.get(int(random(kelp.size()-1)));
+        if(!targetKelp.edible) continue;
+        if (targetKelp.edible) {
           addForce(steer(targetKelp.position));
         }
-        if (PVector.dist(position, targetKelp.position) < 50) {
-          appetite -= targetKelp.amount;
+        if (collider.checkCollide(targetKelp.collider)) {
+          appetite = 0;
           targetKelp.amount = 0;
           targetKelp.edible = false;
+          velocity = PVector.random3D();
         }
       }
     }
