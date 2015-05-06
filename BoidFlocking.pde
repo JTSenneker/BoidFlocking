@@ -1,7 +1,7 @@
 Flock flock;
 Camera cam;
 float cageSize = 1000;
-float sphereOfInfluence = 150;
+float sphereOfInfluence = 100;
 void setup() {
   size(800, 480, P3D);
   cam = new Camera();
@@ -19,7 +19,7 @@ void draw() {
 
 
   flock.update();
-
+  debugText();
 
   stroke(255);
   noFill();
@@ -40,5 +40,10 @@ float deltaTime() {
   
   //deltaTime = min(frameTime,deltaTime);
   return deltaTime;
+}
+
+void debugText(){
+ textAlign(LEFT);
+ text("FPS: " + frameRate,cam.position.x + width/5,cam.position.y-height/3,cam.position.z - 300);
 }
 

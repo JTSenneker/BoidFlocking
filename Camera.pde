@@ -17,6 +17,7 @@ class Camera {
     handleMouse();
 
     camera(position.x, position.y, position.z, target.x, target.y, target.z, up.x, up.y, up.z);
+    
   }
   void handleMouse() {
     float dx = mouseX - mouse.x;
@@ -54,6 +55,7 @@ class Camera {
     v.z = z;
     
     target = PVector.add(position, v);
+    
   }
   PVector getForward() {
     PVector v = PVector.sub(target, position);
@@ -87,6 +89,7 @@ class Camera {
   void moveBack(float amt) {
     move(getForward(), -amt);
   }
+ 
 }
 
 boolean KEY_W = false;
