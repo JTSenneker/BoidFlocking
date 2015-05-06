@@ -21,13 +21,13 @@ void draw() {
   background(0);
   cam.update();
 
-<<<<<<< HEAD
+
 
   flock.update();
   debugText();
 
-=======
->>>>>>> origin/master
+
+
   stroke(255);
   noFill();
   box(cageSize);

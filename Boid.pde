@@ -8,7 +8,7 @@ class Boid {
   ////breeding variables
 
   //hunger variables
-  boolean foundPrey;
+  boolean foundPrey = false;
   float appetite;
   float maxAppetite;
   float predatory;//determins where they'll eat fish or kelp
@@ -36,7 +36,7 @@ class Boid {
   ArrayList<PVector> trail = new ArrayList<PVector>();
   int trailLimit = 200;
 
-  Boid(PVector pos, float mass, float lifeExpectancy, float sexDrive,float childMaxAppetite,float childPredatory) {
+  Boid(PVector pos, float mass, float lifeExpectancy, float sexDrive, float childMaxAppetite, float childPredatory) {
     position = pos;
     this.maxAppetite = childMaxAppetite;
     this.predatory = childPredatory;
@@ -97,22 +97,23 @@ class Boid {
     radius = 50.0;
     maxSpeed = 2.0;
     maxForce = 0.03;
-    maxAppetite = random(60,120);
+    maxAppetite = random(60, 120);
     float angle = random(TWO_PI);
   }
 
   void update(ArrayList<Boid> boids) {
+    
     radius = sphereOfInfluence;
     appetite += deltaTime();
     age += deltaTime();
     labido += deltaTime();
-    if (appetite > maxAppetite){
-     lifeExpectancy -= deltaTime()/5;
-     eat(boids,kelp);
+    if (appetite >= maxAppetite) {
+      lifeExpectancy -= deltaTime()/5;
+      eat(boids, kelp);
     }
     //if (age > lifeExpectancy) dead = true;
     //if (labido >= sexDrive) breed(boids);
-    if (!dying || labido < sexDrive) {
+    if (!dying || labido < sexDrive || appetite < maxAppetite) {
       updateLocation();
       flock(boids);
       borders();
@@ -324,7 +325,8 @@ class Boid {
           float childSexDrive = ((sexDrive + b.sexDrive)/2) + random(-5, 5);
           float childMaxAppetite = ((maxAppetite + b.maxAppetite)/2) + random(-5, 5);
           float childPredatory =  ((predatory + b.predatory)/2) + random(-5, 5);
-          flock.addBoid(new Boid(childPosition, childMass, childLifeExpectancy, childSexDrive,childMaxAppetite,childPredatory));
+          flock.addBoid(new Boid(childPosition, childMass, childLifeExpectancy, childSexDrive, childMaxAppetite, childPredatory));
+          //foundMate = false;
           b.labido = 0;
           labido = 0;
         }
@@ -335,39 +337,32 @@ class Boid {
 
   //hunger method
   void eat(ArrayList<Boid> boids, ArrayList<Kelp> kelp) {
-    Boid prey = new Boid(new PVector(0,0,0));
+    //Boid prey = /*new Boid(new PVector(0,0,0))*/ null;
     if (predatory > 0) {
-      if (!foundPrey) {
-        for (int i = boids.size () - 1; i >= 0; i--) {
-          Boid b = boids.get(i);
-          if (b == this) continue;
-          
-            prey = b;
-            foundPrey = true;
-          
+      for (int i = boids.size () - 1; i >= 0; i--) {
+        Boid b = boids.get(i);
+        if (b == this) continue;
+        Boid prey = b;
+        println(PVector.dist(this.position,prey.position));
+          addForce(steer(prey.position));
+          if (PVector.dist(prey.position, position) < 100) {
+            prey.dead = true;  
+            appetite = 0;
+            //foundPrey = false;
         }
       }
-      else{
-        addForce(steer(prey.position));
-        if (PVector.dist(position,prey.position) < 100){
-          prey.dead = true;  
-          appetite = 0;
-          println(prey);
-          foundPrey = false;
-        }
-      }
-    }else{
-      for(Kelp k : kelp){
-       Kelp targetKelp = new Kelp(new PVector(0,0,0));
-        if (k.edible){
+    } else {
+      for (Kelp k : kelp) {
+        Kelp targetKelp = new Kelp(new PVector(0, 0, 0));
+        if (k.edible) {
           targetKelp = k;
           addForce(steer(targetKelp.position));
-       }
-       if (PVector.dist(position,targetKelp.position) < 50){
-        appetite -= targetKelp.amount;
-        targetKelp.amount = 0;
-        targetKelp.edible = false;
-       } 
+        }
+        if (PVector.dist(position, targetKelp.position) < 50) {
+          appetite -= targetKelp.amount;
+          targetKelp.amount = 0;
+          targetKelp.edible = false;
+        }
       }
     }
   }
