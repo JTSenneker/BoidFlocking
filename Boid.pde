@@ -11,7 +11,7 @@ class Boid {
   boolean foundPrey = false;
   float appetite;
   float maxAppetite;
-  float predatory;//determins where they'll eat fish or kelp
+  float predatory = 0;//determins where they'll eat fish or kelp
   //hunger variables
 
   PVector prevPosition;
@@ -72,13 +72,13 @@ class Boid {
     maxForce = 0.03;
 
     float angle = random(TWO_PI);
-    collider = new AABB(mass,mass,mass);
+    collider = new AABB(mass, mass, mass);
   }
 
   Boid(PVector pos) {
-    age = random(1,10);
+    age = random(1, 10);
     gender = random(100);
-    predatory = random(100);
+    // predatory = random(100);
     if (gender > 50) {
       //the boid is female
       //and will be represented a green node
@@ -102,11 +102,11 @@ class Boid {
     maxForce = 0.03;
     maxAppetite = random(120, 240);
     float angle = random(TWO_PI);
-    collider = new AABB(mass,mass,mass);
+    collider = new AABB(mass, mass, mass);
   }
 
   void update(ArrayList<Boid> boids) {
-    
+
     mass = age/10;
     if (mass < 10) mass = 10;
     radius = sphereOfInfluence;
@@ -125,7 +125,7 @@ class Boid {
       flock(boids);
       borders();
     }
-    collider.update(mass,mass,mass,position);
+    collider.update(mass, mass, mass, position);
     draw();
   }
 
@@ -327,7 +327,7 @@ class Boid {
       } else {
         addForce(steer(mate.position));
         if (collider.checkCollide(mate.collider)) {
-          println("gotcha");
+          
           PVector childPosition = new PVector(b.position.x, b.position.y, b.position.z-10);
           float childMass = ((mass + b.mass)/2) + random(-5, 5);
           float childLifeExpectancy = ((lifeExpectancy + b.lifeExpectancy)/2) + random(-5, 5);
@@ -348,35 +348,41 @@ class Boid {
   //hunger method
   void eat(ArrayList<Boid> boids, ArrayList<Kelp> kelp) {
     //Boid prey = /*new Boid(new PVector(0,0,0))*/ null;
-
-    if (predatory > 90) {
+    predatory += deltaTime();
+    if (predatory > 100) {
       for (int i = boids.size () - 1; i >= 0; i--) {
         Boid b = boids.get(i);
         if (b == this || b.mass > this.mass) continue;
         Boid prey = b;
-            //println(PVector.dist(this.position,prey.position));
+        //println(PVector.dist(this.position,prey.position));
+
+        addForce(steer(prey.position));
+        if (collider.checkCollide(prey.collider)) {
           
-           addForce(steer(prey.position));
-          if (collider.checkCollide(prey.collider)) {
-            println("gotcha");
-            prey.dead = true;  
-            appetite = 0;
-            //foundPrey = false;
-            velocity = PVector.random3D();
+          prey.dead = true;  
+          appetite = 0;
+          //foundPrey = false;
+          maxAppetite +=10;
+          lifeExpectancy += 10;
+          velocity = PVector.random3D();
         }
       }
     } else {
-      for ( int i =  kelp.size()-1;i >=0;i--) {
-        Kelp targetKelp = kelp.get(int(random(kelp.size()-1)));
-        if(!targetKelp.edible) continue;
+      for ( int i =  kelp.size ()-1; i >=0; i--) {
+        Kelp targetKelp = kelp.get(i);
+        if (!targetKelp.edible || targetKelp == null) continue;
         if (targetKelp.edible) {
           addForce(steer(targetKelp.position));
-        }
-        if (collider.checkCollide(targetKelp.collider)) {
-          appetite = 0;
-          targetKelp.amount = 0;
-          targetKelp.edible = false;
-          velocity = PVector.random3D();
+
+          if (collider.checkCollide(targetKelp.collider)) {
+            
+            appetite = 0;
+            targetKelp.amount = 0;
+            targetKelp.edible = false;
+            maxAppetite+=10;
+            lifeExpectancy += 10;
+            velocity = PVector.random3D();
+          }
         }
       }
     }

@@ -15,4 +15,7 @@ class Flock{
   void addBoid(Boid b){
    boids.add(b); 
   }
+  void clearBoids(){
+   boids.clear(); 
+  }
 }

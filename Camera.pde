@@ -92,6 +92,11 @@ class Camera {
  
 }
 
+boolean KEY_DEL = false;
+boolean KEY_F = false;
+boolean KEY_LEFT = false;
+boolean KEY_RIGHT = false;
+
 boolean KEY_W = false;
 boolean KEY_A = false;
 boolean KEY_S = false;
@@ -110,6 +115,18 @@ void handleKey(int keyCode, boolean state) {
     break;
   case 83:
     KEY_S = state;
+    break;
+  case 127:
+    KEY_DEL = state;
+    break;
+  case 70:
+    KEY_F = state;
+    break;
+  case 37:
+    KEY_LEFT = state;
+    break;
+  case 39:
+    KEY_RIGHT = state;
     break;
   }
 }
