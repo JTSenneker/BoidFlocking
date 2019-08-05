@@ -20,6 +20,7 @@ ArrayList<Kelp> kelp = new ArrayList<Kelp>();
 float cageSize = 1000;
 float sphereOfInfluence = 150;
 public void setup() {
+  //size(800, 480, P3D);
   
   cam = new Camera();
   flock = new Flock();
@@ -33,7 +34,7 @@ public void setup() {
 }
 
 public void draw() {
-  println(keyCode);
+  //println(keyCode);
   //lights();
   background(0);
   cam.update();
@@ -59,7 +60,7 @@ public void draw() {
   stroke(255);
   noFill();
   //box(cageSize);
-  flock.update();
+  //flock.update();
   for (Kelp k : kelp) { 
     k.update();
     k.draw();
@@ -255,7 +256,7 @@ class Boid {
     age += deltaTime();
     labido += deltaTime();
     if (appetite >= maxAppetite) {
-      lifeExpectancy -= deltaTime()/3;
+      lifeExpectancy -= deltaTime()/10;
       maxAppetite -= deltaTime()/3;
       eat(boids, kelp);
     }
@@ -435,7 +436,7 @@ class Boid {
     popMatrix();
     stroke(tint);
     strokeWeight(1);
-    //drawTrail();
+    drawTrail();
   }
 
   public void drawTrail() {
@@ -729,7 +730,7 @@ class Kelp{
   popMatrix();
  }
 }
-  public void settings() {  size(800, 480, P3D); }
+  public void settings() {  fullScreen(P3D); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "BoidFlocking" };
     if (passedArgs != null) {

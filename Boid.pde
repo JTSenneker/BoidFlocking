@@ -114,7 +114,7 @@ class Boid {
     age += deltaTime();
     labido += deltaTime();
     if (appetite >= maxAppetite) {
-      lifeExpectancy -= deltaTime()/3;
+      lifeExpectancy -= deltaTime()/10;
       maxAppetite -= deltaTime()/3;
       eat(boids, kelp);
     }
@@ -294,7 +294,7 @@ class Boid {
     popMatrix();
     stroke(tint);
     strokeWeight(1);
-    //drawTrail();
+    drawTrail();
   }
 
   void drawTrail() {

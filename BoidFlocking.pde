@@ -4,7 +4,8 @@ ArrayList<Kelp> kelp = new ArrayList<Kelp>();
 float cageSize = 1000;
 float sphereOfInfluence = 150;
 void setup() {
-  size(800, 480, P3D);
+  //size(800, 480, P3D);
+  fullScreen(P3D);
   cam = new Camera();
   flock = new Flock();
 
@@ -17,7 +18,7 @@ void setup() {
 }
 
 void draw() {
-  println(keyCode);
+  //println(keyCode);
   //lights();
   background(0);
   cam.update();
@@ -43,7 +44,7 @@ void draw() {
   stroke(255);
   noFill();
   //box(cageSize);
-  flock.update();
+  //flock.update();
   for (Kelp k : kelp) { 
     k.update();
     k.draw();
