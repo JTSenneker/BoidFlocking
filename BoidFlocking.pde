@@ -25,7 +25,7 @@ void draw() {
 
 
   flock.update();
-  debugText();
+  //debugText();
 
   if (KEY_DEL){//remove all fish
      flock.clearBoids(); 
@@ -42,7 +42,7 @@ void draw() {
 
   stroke(255);
   noFill();
-  box(cageSize);
+  //box(cageSize);
   flock.update();
   for (Kelp k : kelp) { 
     k.update();
